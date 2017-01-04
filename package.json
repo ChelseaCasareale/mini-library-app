@@ -1,5 +1,5 @@
 {
-  "name": "node_express",
+  "name": "library_app",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -31,6 +31,7 @@
     "start": "gulp serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+
+  "author": "Chelsea Casareale",
   "license": "ISC"
 }
