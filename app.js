@@ -1,44 +1,25 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-var passport = require('passport');
-var session = require('express-session');
-var methodOverride = require('method-override');
+var express = require('express'),
+    bodyParser = require('body-parser'),
+    cookieParser = require('cookie-parser'),
+    mongoose = require('mongoose'),
+    passport = require('passport'),
+    session = require('express-session'),
+    methodOverride = require('method-override');
 
+var Book = require('./src/models/bookModel.js');
+var User = require('./src/models/userModel.js');
 
 var app = express();
 
-// var mysql = require('mysql2');
-// var connection = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'root',
-//   password: 'gotan132',
-//   database: 'books'
-// });
-//
-// connection.connect(function(err) {
-//   if (err) {
-//     console.error('error connecting: ' + err.stack);
-//     return;
-//   }
-//
-//   console.log('connected as id ' + connection.threadId);
-// });
+var db;
+
+if (process.env.ENV === 'Test') {
+  db = mongoose.connect('mongodb://localhost/libraryApp_test');
+} else {
+  db = mongoose.connect('mongodb://localhost/libraryApp');
+}
 
 var port = process.env.PORT || 5000;
-
-var nav = [{
-  Link: '/books',
-  Text: 'Books'
-// },
-// {
-//   Link: '/authors',
-//   Text: 'Authors'
-}];
-
-var bookRouter = require('./src/routes/bookRoutes.js')(nav);
-var adminRouter = require('./src/routes/adminRoutes.js')(nav);
-var authRouter = require('./src/routes/authRoutes.js')();
 
 app.use(express.static('public'));
 
@@ -46,6 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 
+// Allows PATCH/PUT/DELETE method for a form
 app.use(methodOverride(function (req, res) {
   if (req.body && typeof req.body === 'object' && '_method' in req.body) {
     // look in urlencoded POST bodies and delete it
@@ -61,10 +43,19 @@ app.use(session({
   saveUninitialized: false
 }));
 
-require('./src/config/passport')(app);
+require('./src/config/passport')(app, User);
 
 app.set('views', './src/views');
 app.set('view engine', 'ejs');
+
+var nav = [{
+  Link: '/books',
+  Text: 'Books'
+}];
+
+var bookRouter = require('./src/routes/bookRoutes.js')(Book, nav);
+var adminRouter = require('./src/routes/adminRoutes.js')(Book);
+var authRouter = require('./src/routes/authRoutes.js')(User);
 
 app.use('/books', bookRouter);
 app.use('/admin', adminRouter);
@@ -85,3 +76,26 @@ app.get('/profile', function(req, res) {
 app.listen(port, function(err) {
   console.log('running server on port ' + port);
 });
+
+
+
+
+
+
+
+// var mysql = require('mysql2');
+// var connection = mysql.createConnection({
+//   host: 'localhost',
+//   user: 'root',
+//   password: 'gotan132',
+//   database: 'books'
+// });
+//
+// connection.connect(function(err) {
+//   if (err) {
+//     console.error('error connecting: ' + err.stack);
+//     return;
+//   }
+//
+//   console.log('connected as id ' + connection.threadId);
+// });

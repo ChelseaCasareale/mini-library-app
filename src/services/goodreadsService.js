@@ -11,8 +11,6 @@ var goodreadsService = function() {
       path: '/book/title.xml?key=LL6pybduhxrjPW1fF5Voow&title=' + title
     };
 
-    console.log(options);
-
     var callback = function(response) {
       var str = '';
 

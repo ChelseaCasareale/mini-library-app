@@ -1,11 +1,9 @@
 var express = require('express');
-var mongodb = require('mongodb').MongoClient;
 var bookRouter = express.Router();
-var ObjectId = require('mongodb').ObjectID;
 
-var router = function(nav) {
+var router = function(Book, nav) {
   var bookService = require('../services/goodreadsService')();
-  var bookController = require('../controllers/bookController')(bookService, nav);
+  var bookController = require('../controllers/bookController')(Book, bookService, nav);
 
   bookRouter.use(bookController.middleware);
 
@@ -29,9 +27,26 @@ var router = function(nav) {
 
 
 /***** GET BOOK BY ID AND EDIT ENTRY *****/
+bookRouter.use('/:id', function(req, res, next) {
+  Book.findById(req.params.id, function(err, book) {
+    if (err) {
+      res.status(500).send(err);
+    } else if (book) {
+      req.book = book;
+      console.log(req.book);
+      next();
+    } else {
+      res.status(404).send('no book found');
+    }
+  });
+});
+
 // Get individual book page
   bookRouter.route('/:id')
     .get(bookController.getById);
+
+  bookRouter.route('/:id/delete')
+    .get(bookController.deleteBook);
 
 // Get edit page for individual book
   bookRouter.route('/:id/edit-book')

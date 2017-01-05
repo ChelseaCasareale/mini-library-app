@@ -12,6 +12,7 @@
     "http": "0.0.0",
     "method-override": "^2.3.7",
     "mongodb": "^2.2.16",
+    "mongoose": "^4.7.6",
     "mysql2": "^1.1.2",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
@@ -31,7 +32,6 @@
     "start": "gulp serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "author": "Chelsea Casareale",
   "license": "ISC"
 }

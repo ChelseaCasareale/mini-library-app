@@ -1,7 +1,4 @@
-var mongodb = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectID;
-
-var bookController = function(bookService, nav) {
+var bookController = function(Book, bookService, nav) {
   var middleware = function(req, res, next) {
     // if (!req.user) {
     //   res.redirect('/');
@@ -11,90 +8,72 @@ var bookController = function(bookService, nav) {
   };
 
   var getIndex = function(req, res) {
-    var url = 'mongodb://localhost:27017/libraryApp';
-    mongodb.connect(url, function(err, db) {
-      var collection = db.collection('books');
+    var query = {};
 
-      collection.find({})
-          .toArray(function(err, results) {
-            res.render('bookListView', {
-              nav: nav,
-              books: results
-            });
-          });
+    Book.find(query, function(err, books) {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.render('bookListView', {
+          nav: nav,
+          books: books
+        });
+      }
     });
   };
 
   var getById = function(req, res) {
-    var id = new ObjectId(req.params.id);
-    var url = 'mongodb://localhost:27017/libraryApp';
-    mongodb.connect(url, function(err, db) {
-      var collection = db.collection('books');
-
-      collection.findOne({_id: id}, function(err, results) {
-        if (results.title) {
-          bookService.getBookByTitle(results.title, function(err, book) {
-            results.book = book;
-            res.render('bookView', {
-              nav: nav,
-              book: results
-            });
-          });
-        } else {
-          res.render('bookView', {
-            nav: nav,
-            book: results
-          });
-        }
+    bookService.getBookByTitle(req.book.title, function(err, book) {
+      res.render('bookView', {
+        nav: nav,
+        grBook: book,
+        book: req.book
       });
     });
   };
 
   var getBookToEdit = function(req, res) {
-    var id = new ObjectId(req.params.id);
-    var url = 'mongodb://localhost:27017/libraryApp';
-    mongodb.connect(url, function(err, db) {
-      var collection = db.collection('books');
-
-      collection.findOne({_id: id}, function(err, results) {
-        console.log(results);
-        res.render('bookEdit', {
-          nav: nav,
-          book: results
-        });
-      });
+    res.render('bookEdit', {
+      nav: nav,
+      book: req.book
     });
   };
 
   var patchBook = function(req, res) {
-    var updateObject = req.body;
-    var url = 'mongodb://localhost:27017/libraryApp';
-    console.log(updateObject);
-    var id = new ObjectId(req.params.id);
-    console.log(id);
+    if (req.body.id) {
+      delete req.body.id;
+    }
 
-    mongodb.connect(url, function(err, db) {
-      var collection = db.collection('books');
-      collection.updateOne({_id: id }, {$set: updateObject}, function(err, result) {
+    for (var p in req.body) {
+      req.book[p] = req.body[p];
+    }
+    req.book.save(function(err) {
+      if (err) {
         res.redirect('/books');
-      });
+      } else {
+        res.redirect('/books');
+      }
     });
-
   };
 
   var postBook = function (req, res) {
-    var url = 'mongodb://localhost:27017/libraryApp';
-    mongodb.connect(url, function(err, db) {
-      var collection = db.collection('books');
-
-      var book = {
-        title: req.body.title,
-        author: req.body.author
-      };
-
-      collection.insert(book, function(err, results) {
+    var book = new Book(req.body);
+    book.save(function(err) {
+      if (err) {
         res.redirect('/books');
-      });
+      } else {
+        res.redirect('/books');
+      }
+    });
+  };
+
+  var deleteBook = function(req, res) {
+    req.book.remove(function(err) {
+      if (err) {
+        res.redirect('/books');
+      } else {
+        res.redirect('/books');
+      }
     });
   };
 
@@ -104,6 +83,7 @@ var bookController = function(bookService, nav) {
     getBookToEdit: getBookToEdit,
     patchBook: patchBook,
     postBook: postBook,
+    deleteBook: deleteBook,
     middleware: middleware
   };
 };

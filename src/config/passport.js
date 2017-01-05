@@ -1,6 +1,6 @@
 var passport = require('passport');
 
-module.exports = function(app) {
+module.exports = function(app, User) {
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -12,5 +12,5 @@ module.exports = function(app) {
     done(null, user);
   });
 
-  require('./strategies/local.strategy')();
+  require('./strategies/local.strategy')(User);
 };

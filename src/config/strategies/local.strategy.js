@@ -2,11 +2,23 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongodb = require('mongodb').MongoClient;
 
-module.exports = function() {
+module.exports = function(User) {
   passport.use(new LocalStrategy({
-    usernameField: 'userName',
+    usernameField: 'username',
     passwordField: 'password'
   }, function(username, password, done) {
+
+    // User.find({username: username}, function(err, results) {
+    //   console.log(results);
+    //   if (results.password === password) {
+    //     var user = results;
+    //     done(null, user);
+    //   } else {
+    //     console.log(err);
+    //     done(null, false, {message: 'Bad password'});
+    //   }
+    // });
+
     var url = 'mongodb://localhost:27017/libraryApp';
 
     mongodb.connect(url, function(err, db) {

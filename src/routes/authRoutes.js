@@ -1,27 +1,20 @@
 var express = require('express');
 var authRouter = express.Router();
-var mongodb = require('mongodb').MongoClient;
+var mongoose = require('mongoose');
 var passport = require('passport');
 
-var router = function() {
+var router = function(User) {
   authRouter.route('/signUp')
     .post(function(req, res) {
-      console.log(req.body);
+      var user = new User(req.body);
 
-      var url = 'mongodb://localhost:27017/libraryApp';
-      mongodb.connect(url, function(err, db) {
-        var collection = db.collection('users');
-        var user = {
-          username: req.body.userName,
-          password: req.body.password
-        };
-
-        // add functionality to check to existing user
-        collection.insert(user, function(err, results) {
-          req.login(results.ops[0], function() {
-            res.redirect('/auth/profile');
-          });
-        });
+      user.save(function(err) {
+        if (err) {
+          console.log(err);
+          res.redirect('/');
+        } else {
+          res.redirect('/profile');
+        }
       });
     });
 
@@ -35,13 +28,14 @@ var router = function() {
   authRouter.route('/profile')
     .all(function(req, res, next) {
       if (!req.user) {
+        console.log(req.user);
         res.redirect('/');
       } else {
         next();
       }
     })
     .get(function(req, res) {
-      res.json(req.user);
+      res.redirect('/profile');
     });
   return authRouter;
 };
